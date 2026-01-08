@@ -1,0 +1,72 @@
+.data
+numeros:	.word 90, 23, 10, 3, 43, 21, 213, 2, 54, 6, 45, 23, 8, 123, 214, 653, 345, 654, 77, 344,
+espacio:	.asciiz " "
+.text
+.globl	main
+.ent	main
+
+main:
+	jal begin
+	addi $sp, $sp, -8
+	li	$v0,10
+	syscall
+begin:
+	la	$s0,numeros
+	addi $s1,$zero,0 # i
+
+firstcycle:
+	slti $t0,$s1,19
+	beq $t0,$zero,endcycles
+	add $t1,$zero,$s1 # min
+	addi $t2,$s1,1 # j
+
+secondcycle:
+	slti $t3,$t2,20
+	beq $t3,$zero,swap
+	sll $t4,$t2,2
+	add $t4,$s0,$t4
+	sll $t5,$t1,2
+	add $t5,$s0,$t5
+	lw $s2,0($t4) # A[j]
+	lw $s3,0($t5) # A[min]
+
+	slt $t6,$s2,$s3
+	beq $t6,$zero,endif
+	add $t1,$zero,$t2
+
+endif:
+	addi $t2,$t2,1
+	j secondcycle
+
+swap:
+	sll $s4,$s1,2
+	add $s4,$s0,$s4 # A[i]
+	sll $s6,$t1,2
+	add $s6,$s0,$s6 # A[min]
+	lw $s5,0($s4)
+	lw $s7,0($s6)
+	sw $s7,0($s4) # A[i] = A[min]
+	sw $s5,0($s6) # A[min] = A[i]
+	addi $s1,$s1,1
+	addi $t7,$zero,0
+	la $s6,espacio
+	j firstcycle
+
+endcycles:
+	sll $s7,$t7,2 # counter
+	slti $t8,$t7,20
+	beq $t8,$zero,end
+	add $t9,$s0,$s7 # A[counter]
+	lw $a0,0($t9)
+	addi $v0,$zero,1
+	syscall
+	lw $a0,0($s6) # espacio
+	addi $v0,$zero,11
+	syscall
+	addi $t7,$t7,1
+	j endcycles
+
+end:
+	jr $ra
+
+.end main

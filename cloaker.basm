@@ -1,0 +1,100 @@
+RAM: 0
+
+DEVICE: 1 1 0
+DEVICE: 2 2 0
+DEVICE: 3 2 0
+DEVICE: 6 2 0
+DEVICE: 19 4 0
+DEVICE: 19 4 2
+DEVICE: 5 1 0
+DEVICE: 5 0 0
+DEVICE: 7 3 0
+DEVICE: 7 3 0
+DEVICE: 7 2 0
+DEVICE: 7 2 0
+DEVICE: 12 2 0
+DEVICE: 15 3 0
+DEVICE: 16 4 0
+DEVICE: 13 2 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+DEVICE: 0 0 0
+
+
+:start
+out Cloak0_EnableCloak,1
+out Chiller0_SetExtraCooling,1
+out Shield0_SetShieldEnabled,1     
+out Scanner0_SetScanWidth,64
+out Scanner0_SetSensitivity,1
+
+:drive
+out Engine0_SetThrust,75
+jmp scan
+
+:scan
+out Scanner0_Scan,1
+hwait
+in ax, Scanner0_GetScanDistance
+cmp ax,60000
+jae forward
+jmp move
+
+:move
+out Engine0_SetThrust,255
+cmp ax,7999
+jbe aim
+jmp drive
+
+:aim
+in bx, Scanner0_GetScanAccuracy
+cmp bx,2
+jz shoot 
+jae right
+
+:left
+out Steering0_AdjustWantedDir,974
+jmp shoot
+
+:right
+out Steering0_AdjustWantedDir,50
+jmp shoot
+
+:shoot
+add ax,20
+out Beam0_SetBeamDir,bx
+out Beam0_SetBeamLength,ax
+out Beam0_FireBeam,1
+out Beam1_SetBeamDir,bx
+out Beam1_SetBeamLength,ax
+out Beam1_FireBeam,1
+jmp drive
+
+:stir
+out Steering0_AdjustWantedDir,1008
+jmp drive
+
+:forward
+out Engine0_SetThrust,255
+out Engine0_SetThrust,255
+out Engine0_SetThrust,255
+hwait
+hwait
+hwait
+jmp stir
+
+;Sistema de apuntado inspirado por
+;Tracker.BOT
